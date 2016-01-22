@@ -1,7 +1,7 @@
 'use strict';
 
-var React = require('react/addons');
-var TransitionGroup = React.createFactory(React.addons.TransitionGroup);
+var React = require('react');
+var TransitionGroup = React.createFactory(require('react-addons-transition-group'));
 
 var RAFList = require('./RAFList');
 
@@ -35,6 +35,8 @@ xi) classname, elementClassName
 
 */
 function realRender(direction) {
+  var windowWidth = this.state.windowWidth;
+  var windowHeight = this.state.windowHeight;
   var elementWidth = this.props.mobileWidth <= windowWidth ? this.props.elementWidth :
     this.props.elementMobileWidth;
   var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight :
@@ -43,13 +45,13 @@ function realRender(direction) {
 
   var windowX, windowY, elementX, elementY;
   if (direction === 'vertical') {
-    windowX = this.state.windowWidth;
-    windowY = this.state.windowHeight;
+    windowX = windowWidth;
+    windowY = windowHeight;
     elementX = elementWidth;
     elementY = elementHeight;
   } else {
-    windowX = this.state.windowHeight;
-    windowY = this.state.windowWidth;
+    windowX = windowHeight;
+    windowY = windowWidth;
     elementX = elementHeight;
     elementY = elementWidth;
   }
