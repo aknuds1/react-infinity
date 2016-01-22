@@ -34,6 +34,83 @@ x) Transition duration, curve and delay per element (for staggered animations) d
 xi) classname, elementClassName
 
 */
+function layout(direction) {
+  var elementWidth = this.props.mobileWidth <= windowWidth ? this.props.elementWidth :
+    this.props.elementMobileWidth;
+  var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight :
+    this.props.elementMobileHeight;
+  var margin = this.props.margin;
+
+  var windowX, windowY, elementX, elementY;
+  if (direction === 'vertical') {
+    windowX = this.state.windowWidth;
+    windowY = this.state.windowHeight;
+    elementX = elementWidth;
+    elementY = elementHeight;
+  } else {
+    windowX = this.state.windowHeight;
+    windowY = this.state.windowWidth;
+    elementX = elementHeight;
+    elementY = elementWidth;
+  }
+
+  if(this.props.justifyOnMobile && this.props.mobileWidth > windowWidth) {
+    elementX = windowX;
+    margin = 0;
+  }
+
+  var numElements = Math.max(1, Math.floor((windowX - margin) / (elementX + margin)));
+  var extraSpace = windowX - numElements * (elementX + margin) + margin;
+  var offset = this.props.align === 'left' ? 0 :
+               this.props.align === 'center' ? Math.round(extraSpace/2) : extraSpace;
+
+  var scrollStart = this.state.scrollTop - this.state.scrollDelta;
+  var numBefore = Math.floor((scrollStart - margin) / (elementHeight + margin));
+  var numVisible = Math.ceil(((numBefore * (elementY + margin)) + windowY)/
+    (elementY + margin));
+
+  var extra = numElements === 1 ? Math.ceil(numVisible/2) : 2;
+  var lowerLimit = (numBefore - extra) * numElements;
+  var higherLimit = (numVisible + extra*2) * numElements;
+
+  var elementsToRender = [];
+
+  this.props.data.forEach(function (obj, index) {
+    if(index >= lowerLimit && index < higherLimit) {
+      var column, row;
+      if (direction === 'vertical') {
+        column = index % numElements;
+        row = Math.floor(index / numElements);
+      } else {
+        row = index % numElements;
+        column = Math.floor(index / numElements);
+      }
+      elementsToRender.push(SubContainer(
+        {
+          key: obj.id || obj._id,
+          transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+
+            (margin + row * (elementHeight + margin)) +'px)',
+          width: elementWidth + 'px',
+          height: elementHeight + 'px',
+          transition: this.props.transition,
+        },
+        this.props.childComponent(obj)
+      ));
+    }
+  }.bind(this));
+
+  return React.createElement(this.props.containerComponent,
+    {
+      className: 'infinite-container', style: {
+        height: (margin + (elementHeight + margin) *
+          Math.ceil(this.props.data.length / numElements)) + 'px',
+        width: '100%',
+        position: 'relative',
+      },
+    },
+    TransitionGroup(null, elementsToRender)
+  );
+}
 
 var Infinite = React.createClass({
 
@@ -131,123 +208,12 @@ var Infinite = React.createClass({
     }
   },
 
-  vertical: function(){
-    var windowWidth = this.state.windowWidth;
-    var windowHeight = this.state.windowHeight;
-
-    var elementWidth = this.props.mobileWidth <= windowWidth ? this.props.elementWidth :
-      this.props.elementMobileWidth;
-    var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight :
-      this.props.elementMobileHeight;
-    var margin = this.props.margin;
-
-    if(!!this.props.justifyOnMobile && this.props.mobileWidth > windowWidth) {
-      elementWidth = windowWidth;
-      margin = 0;
-    }
-
-    var elementsPerRow = Math.max(1, Math.floor((windowWidth - margin) / (elementWidth + margin)));
-    var extraSpace = windowWidth - elementsPerRow * (elementWidth + margin) + margin;
-    var offset = this.props.align === 'left' ? 0 :
-                 this.props.align === 'center' ? Math.round(extraSpace/2) : extraSpace;
-
-    var scrollTop = this.state.scrollTop - this.state.scrollDelta;
-    var rowsAbove = Math.floor((scrollTop - margin) / (elementHeight + margin));
-    var visibleRows = Math.ceil(((rowsAbove * (elementHeight + margin)) + windowHeight)/
-      (elementHeight+margin));
-
-    var extra = elementsPerRow === 1 ? Math.ceil(visibleRows/2) : 2;
-    var lowerLimit = (rowsAbove - extra) * elementsPerRow;
-    var higherLimit = (visibleRows + extra*2) * elementsPerRow;
-
-    var elementsToRender = [];
-
-    this.props.data.forEach(function (obj, index) {
-      if(index >= lowerLimit && index < higherLimit){
-        var column = index % elementsPerRow;
-        var row = Math.floor(index / elementsPerRow);
-        elementsToRender.push(SubContainer({
-          key: obj.id || obj._id,
-          transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+
-            (margin + row * (elementHeight + margin)) +'px)',
-          width: elementWidth + 'px',
-          height: elementHeight + 'px',
-          transition: this.props.transition,
-        }, this.props.childComponent(obj)));
-      }
-    }.bind(this));
-
-    return React.createElement(this.props.containerComponent, {
-        className: 'infinite-container', style: {
-          height: (margin + (elementHeight + margin) *
-            Math.ceil(this.props.data.length/elementsPerRow)) + 'px',
-          width: '100%',
-          position: 'relative',
-        },
-      },
-      TransitionGroup(null, elementsToRender)
-    );
+  vertical: function () {
+    return layout('vertical');
   },
 
-  horizontal: function(){
-    var windowWidth = this.state.windowWidth;
-    var windowHeight = this.state.windowHeight;
-
-    var elementWidth = this.props.mobileWidth <= windowWidth ? this.props.elementWidth :
-      this.props.elementMobileWidth;
-    var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight :
-      this.props.elementMobileHeight;
-    var margin = this.props.margin;
-
-    if(!!this.props.justifyOnMobile && this.props.mobileWidth > windowWidth) {
-      elementHeight = windowHeight;
-      margin = 0;
-    }
-
-    var elementsPerColumn = Math.max(1, Math.floor((windowHeight - margin) /
-      (elementHeight + margin)));
-    var extraSpace = windowHeight - elementsPerColumn * (elementHeight + margin) + margin;
-    var offset = this.props.align === 'left' ? 0 :
-                 this.props.align === 'center' ? Math.round(extraSpace/2) : extraSpace;
-
-    var scrollLeft = this.state.scrollTop - this.state.scrollDelta;
-    var columnsToLeft = Math.floor((scrollLeft - margin) / (elementHeight + margin));
-    var visibleColumns = Math.ceil(((columnsToLeft * (elementWidth + margin)) + windowWidth) /
-      (elementWidth + margin));
-
-    var extra = elementsPerColumn === 1 ? Math.ceil(visibleColumns/2) : 2;
-    var lowerLimit = (columnsToLeft - extra) * elementsPerColumn;
-    var higherLimit = (visibleColumns + extra * 2) * elementsPerColumn;
-
-    var elementsToRender = [];
-
-    this.props.data.forEach(function (obj, index) {
-      if(index >= lowerLimit && index < higherLimit){
-        var row = index % elementsPerColumn;
-        var column = Math.floor(index / elementsPerColumn);
-        elementsToRender.push(SubContainer({
-          key: obj.id || obj._id,
-          transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+
-            (margin + row * (elementHeight + margin)) +'px)',
-          width: elementWidth + 'px',
-          height: elementHeight + 'px',
-          transition: this.props.transition,
-        }, this.props.childComponent(obj)));
-      }
-    }.bind(this));
-
-    return React.createElement(this.props.containerComponent,
-      {
-        className: 'infinite-container',
-        style: {
-          height: (margin + (elementHeight + margin) *
-            Math.ceil(this.props.data.length/elementsPerColumn)) + 'px',
-          width: '100%',
-          position: 'relative',
-        },
-      },
-      TransitionGroup(null, elementsToRender)
-    );
+  horizontal: function () {
+    return layout('horizontal');
   },
 
   render: function(){
