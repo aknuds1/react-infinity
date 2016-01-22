@@ -34,7 +34,7 @@ x) Transition duration, curve and delay per element (for staggered animations) d
 xi) classname, elementClassName
 
 */
-function layout(direction) {
+function realRender(direction) {
   var elementWidth = this.props.mobileWidth <= windowWidth ? this.props.elementWidth :
     this.props.elementMobileWidth;
   var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight :
@@ -113,7 +113,6 @@ function layout(direction) {
 }
 
 var Infinite = React.createClass({
-
   displayName: 'React-Infinity',
 
   getDefaultProps: function () {
@@ -122,6 +121,7 @@ var Infinite = React.createClass({
       maxColumns: 100,
       align: 'center',
       transition: '0.5s ease',
+      id: null,
       className: 'infinite-container',
       elementClassName: '',
       component: 'div',
@@ -140,6 +140,7 @@ var Infinite = React.createClass({
     maxColumns: React.PropTypes.number,
     align: React.PropTypes.string,
     transition: React.PropTypes.string,
+    id: React.PropTypes.string,
     className: React.PropTypes.string,
     elementHeight: React.PropTypes.number,
     elementWidth: React.PropTypes.number,
@@ -165,7 +166,6 @@ var Infinite = React.createClass({
   },
 
   componentDidMount: function () {
-
     global.addEventListener('resize', this.onResize);
 
     if(this.props.transitionable){
@@ -208,19 +208,13 @@ var Infinite = React.createClass({
     }
   },
 
-  vertical: function () {
-    return layout('vertical');
-  },
-
-  horizontal: function () {
-    return layout('horizontal');
-  },
-
   render: function(){
     if(this.state.loaded === false) {
       return this.props.preRender ? React.createElement(this.props.containerComponent,
         {
-          className: 'infinite-container', style: {
+          className: this.props.className,
+          id: this.props.id,
+          style: {
             fontSize: '0', position: 'relative',
             textAlign: this.props.align,
           },
@@ -232,15 +226,13 @@ var Infinite = React.createClass({
         : null;
     }
 
-    if(this.props.direction === 'horizontal') {
-      return this.horizontal();
-    } else if(this.props.direction === 'vertical') {
-      return this.vertical();
-    } else {
+    var direction = this.props.direction;
+    if(direction !== 'horizontal' && direction !== 'vertical') {
+      direction = 'vertical';
       console.warn('the prop `direction` must be either "vertical" or "horizontal". It is set to',
-        this.props.direction);
-      return this.vertical();
+        direction);
     }
+    return realRender.call(this, direction);
   },
 });
 
