@@ -3,7 +3,6 @@
 var Transitionable = require('famous/transitions/Transitionable');
 
 var bank = {
-
 };
 
 module.exports = function (name, initialValue) {

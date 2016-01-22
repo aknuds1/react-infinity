@@ -35,7 +35,6 @@ xi) classname, elementClassName
 
 */
 
-
 var Infinite = React.createClass({
 
   displayName: 'React-Infinity',
@@ -55,7 +54,7 @@ var Infinite = React.createClass({
       margin: 0,
       scrollDelta: 0,
       direction: 'vertical',
-      preRender: false
+      preRender: false,
     };
   },
 
@@ -72,7 +71,7 @@ var Infinite = React.createClass({
     elementMobileWidth: React.PropTypes.number,
     margin: React.PropTypes.number,
     justifyOnMobile: React.PropTypes.bool,
-    preRender: React.PropTypes.bool
+    preRender: React.PropTypes.bool,
   },
 
   getInitialState: function () {
@@ -83,8 +82,8 @@ var Infinite = React.createClass({
       loaded: false,
       scrollDelta: 0,
       extra: {
-        count: 0
-      }
+        count: 0,
+      },
     };
   },
 
@@ -103,9 +102,11 @@ var Infinite = React.createClass({
       loaded: true,
       windowWidth: global.innerWidth,
       windowHeight: global.innerHeight,
-      elementWidth: this.props.elementWidth || this.refs.element1.getDOMNode().getClientRects()[0].width,
-      elementHeight: this.props.elementHeight || this.refs.element1.getDOMNode().getClientRects()[0].height,
-      scrollTop: global.scrollY || 0
+      elementWidth: this.props.elementWidth ||
+        this.refs.element1.getDOMNode().getClientRects()[0].width,
+      elementHeight: this.props.elementHeight ||
+        this.refs.element1.getDOMNode().getClientRects()[0].height,
+      scrollTop: global.scrollY || 0,
     });
   },
 
@@ -113,12 +114,12 @@ var Infinite = React.createClass({
     var scrollTop = this.props.transitionable ? this.props.transitionable.get() : global.scrollY;
 
     if(this.state.scrollTop !== scrollTop){
-      this.setState({scrollTop: scrollTop});
+      this.setState({scrollTop: scrollTop,});
     }
   },
 
   onResize: function () {
-    this.setState({windowHeight: global.innerHeight, windowWidth: global.innerWidth});
+    this.setState({windowHeight: global.innerHeight, windowWidth: global.innerWidth,});
   },
 
   componentWillUnmount: function () {
@@ -134,8 +135,10 @@ var Infinite = React.createClass({
     var windowWidth = this.state.windowWidth;
     var windowHeight = this.state.windowHeight;
 
-    var elementWidth = this.props.mobileWidth <= windowWidth ? this.props.elementWidth : this.props.elementMobileWidth;
-    var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight : this.props.elementMobileHeight;
+    var elementWidth = this.props.mobileWidth <= windowWidth ? this.props.elementWidth :
+      this.props.elementMobileWidth;
+    var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight :
+      this.props.elementMobileHeight;
     var margin = this.props.margin;
 
     if(!!this.props.justifyOnMobile && this.props.mobileWidth > windowWidth) {
@@ -150,7 +153,8 @@ var Infinite = React.createClass({
 
     var scrollTop = this.state.scrollTop - this.state.scrollDelta;
     var rowsAbove = Math.floor((scrollTop - margin) / (elementHeight + margin));
-    var visibleRows = Math.ceil(((rowsAbove * (elementHeight + margin)) + windowHeight)/(elementHeight+margin));
+    var visibleRows = Math.ceil(((rowsAbove * (elementHeight + margin)) + windowHeight)/
+      (elementHeight+margin));
 
     var extra = elementsPerRow === 1 ? Math.ceil(visibleRows/2) : 2;
     var lowerLimit = (rowsAbove - extra) * elementsPerRow;
@@ -164,19 +168,23 @@ var Infinite = React.createClass({
         var row = Math.floor(index / elementsPerRow);
         elementsToRender.push(SubContainer({
           key: obj.id || obj._id,
-          transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+ (margin + row * (elementHeight + margin)) +'px)',
+          transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+
+            (margin + row * (elementHeight + margin)) +'px)',
           width: elementWidth + 'px',
           height: elementHeight + 'px',
-          transition: this.props.transition
+          transition: this.props.transition,
         }, this.props.childComponent(obj)));
       }
     }.bind(this));
 
-    return React.createElement(this.props.containerComponent, {className: 'infinite-container', style: {
-      height: (margin + (elementHeight + margin) * Math.ceil(this.props.data.length/elementsPerRow)) + 'px',
-      width: '100%',
-      position: 'relative'}
-    },
+    return React.createElement(this.props.containerComponent, {
+        className: 'infinite-container', style: {
+          height: (margin + (elementHeight + margin) *
+            Math.ceil(this.props.data.length/elementsPerRow)) + 'px',
+          width: '100%',
+          position: 'relative',
+        },
+      },
       TransitionGroup(null, elementsToRender)
     );
   },
@@ -185,8 +193,10 @@ var Infinite = React.createClass({
     var windowWidth = this.state.windowWidth;
     var windowHeight = this.state.windowHeight;
 
-    var elementWidth = this.props.mobileWidth <= windowWidth ? this.props.elementWidth : this.props.elementMobileWidth;
-    var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight : this.props.elementMobileHeight;
+    var elementWidth = this.props.mobileWidth <= windowWidth ? this.props.elementWidth :
+      this.props.elementMobileWidth;
+    var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight :
+      this.props.elementMobileHeight;
     var margin = this.props.margin;
 
     if(!!this.props.justifyOnMobile && this.props.mobileWidth > windowWidth) {
@@ -194,14 +204,16 @@ var Infinite = React.createClass({
       margin = 0;
     }
 
-    var elementsPerColumn = Math.max(1, Math.floor((windowHeight - margin) / (elementHeight + margin)));
+    var elementsPerColumn = Math.max(1, Math.floor((windowHeight - margin) /
+      (elementHeight + margin)));
     var extraSpace = windowHeight - elementsPerColumn * (elementHeight + margin) + margin;
     var offset = this.props.align === 'left' ? 0 :
                  this.props.align === 'center' ? Math.round(extraSpace/2) : extraSpace;
 
     var scrollLeft = this.state.scrollTop - this.state.scrollDelta;
     var columnsToLeft = Math.floor((scrollLeft - margin) / (elementHeight + margin));
-    var visibleColumns = Math.ceil(((columnsToLeft * (elementWidth + margin)) + windowWidth)/(elementWidth + margin));
+    var visibleColumns = Math.ceil(((columnsToLeft * (elementWidth + margin)) + windowWidth) /
+      (elementWidth + margin));
 
     var extra = elementsPerColumn === 1 ? Math.ceil(visibleColumns/2) : 2;
     var lowerLimit = (columnsToLeft - extra) * elementsPerColumn;
@@ -215,31 +227,43 @@ var Infinite = React.createClass({
         var column = Math.floor(index / elementsPerColumn);
         elementsToRender.push(SubContainer({
           key: obj.id || obj._id,
-          transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+ (margin + row * (elementHeight + margin)) +'px)',
+          transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+
+            (margin + row * (elementHeight + margin)) +'px)',
           width: elementWidth + 'px',
           height: elementHeight + 'px',
-          transition: this.props.transition
+          transition: this.props.transition,
         }, this.props.childComponent(obj)));
       }
     }.bind(this));
 
-    return React.createElement(this.props.containerComponent, {className: 'infinite-container', style: {
-      height: (margin + (elementHeight + margin) * Math.ceil(this.props.data.length/elementsPerColumn)) + 'px',
-      width: '100%',
-      position: 'relative'}
-    },
+    return React.createElement(this.props.containerComponent,
+      {
+        className: 'infinite-container',
+        style: {
+          height: (margin + (elementHeight + margin) *
+            Math.ceil(this.props.data.length/elementsPerColumn)) + 'px',
+          width: '100%',
+          position: 'relative',
+        },
+      },
       TransitionGroup(null, elementsToRender)
     );
   },
 
   render: function(){
-    if(this.state.loaded === false){
-      return this.props.preRender
-	      ? React.createElement(this.props.containerComponent, {className: 'infinite-container', style: {fontSize: '0', position: 'relative', textAlign: this.props.align}},
-	          this.props.data.map(function (elementData, i) {
-	          return React.createElement(this.props.component, {style: {display: 'inline-block', margin: '32px', verticalAlign: 'top'}}, React.createElement(this.props.childComponent, elementData));
-	        }.bind(this)))
-	      : null;
+    if(this.state.loaded === false) {
+      return this.props.preRender ? React.createElement(this.props.containerComponent,
+        {
+          className: 'infinite-container', style: {
+            fontSize: '0', position: 'relative',
+            textAlign: this.props.align,
+          },
+        }, this.props.data.map(function (elementData, i) {
+          return React.createElement(this.props.component, {
+            style: {display: 'inline-block', margin: '32px', verticalAlign: 'top',},
+          }, React.createElement(this.props.childComponent, elementData));
+        }.bind(this)))
+        : null;
     }
 
     if(this.props.direction === 'horizontal') {
@@ -247,12 +271,11 @@ var Infinite = React.createClass({
     } else if(this.props.direction === 'vertical') {
       return this.vertical();
     } else {
-      console.warn('the prop `direction` must be either "vertical" or "horizontal". It is set to', this.props.direction);
+      console.warn('the prop `direction` must be either "vertical" or "horizontal". It is set to',
+        this.props.direction);
       return this.vertical();
     }
-    
-  }
-
+  },
 });
 
 module.exports = Infinite;
