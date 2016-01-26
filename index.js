@@ -67,25 +67,25 @@ function realRender(direction) {
   var offset = this.props.align === 'left' ? 0 :
                this.props.align === 'center' ? Math.round(extraSpace / 2) : extraSpace;
 
+  // Number of pixels the container has been scrolled from the top
   var scrollStart = this.state.scrollTop - this.props.scrollDelta;
-  console.log(`Scroll delta: ${this.props.scrollDelta}, scroll top: ${this.state.scrollTop}`)
-  console.log(`Scroll start: ${scrollStart}`)
+  console.log(`Scrolled ${this.state.scrollTop} pixels from the top`)
   var numBefore = Math.floor((scrollStart - margin) / (elementHeight + margin));
-  console.log(`Number of elements before: ${numBefore}`)
+  console.log(`Number of elements before scroll start: ${numBefore}`)
   var numVisible = Math.ceil(((numBefore * (elementY + margin)) + windowY) /
     (elementY + margin));
   console.log(`Number of visible elements: ${numVisible}`)
 
+  // Keep some extra elements before and after visible elements
   var extra = numElements === 1 ? Math.ceil(numVisible / 2) : 2;
   var lowerLimit = (numBefore - extra) * numElements;
-  var higherLimit = (numVisible + extra*2) * numElements;
+  var higherLimit = (numVisible + extra * 2) * numElements;
+  console.log(`Lower limit: ${lowerLimit}, higherLimit: ${higherLimit}, extra: ${extra}`)
 
   var elementsToRender = [];
-
   this.props.data.forEach(function (obj, index) {
-    console.log(`Rendering data item ${index}:`, obj)
-    console.log(`Lower limit: ${lowerLimit}, higherLimit: ${higherLimit}`)
     if (index >= lowerLimit && index < higherLimit) {
+      console.log(`Rendering data item ${index}:`, obj)
       var column, row;
       if (direction === 'vertical') {
         column = index % numElements;
@@ -95,11 +95,13 @@ function realRender(direction) {
         column = Math.floor(index / numElements);
       }
       var id = obj.id != null ? obj.id : obj._id;
+      var xOffset = (offset + column * (elementWidth + margin));
+      var yOffset = (margin + row * (elementHeight + margin));
+      console.log(`X offset: ${xOffset}, y offset: ${yOffset}`)
       var subContainer = SubContainer(
         {
           key: id,
-          transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+
-            (margin + row * (elementHeight + margin)) +'px)',
+          transform: 'translate(' + xOffset  + 'px, ' + yOffset + 'px)',
           width: elementWidth + 'px',
           height: elementHeight + 'px',
           transition: this.props.transition,
@@ -107,6 +109,8 @@ function realRender(direction) {
         this.props.childComponent(obj)
       );
       elementsToRender.push(subContainer);
+    } else {
+      console.log(`Skipping data item ${index}`)
     }
   }.bind(this));
 
@@ -203,7 +207,7 @@ var Infinite = React.createClass({
   onScroll: function () {
     var scrollTop = this.props.transitionable ? this.props.transitionable.get() : global.scrollY;
 
-    if(this.state.scrollTop !== scrollTop){
+    if (this.state.scrollTop !== scrollTop) {
       this.setState({scrollTop: scrollTop,});
     }
   },
