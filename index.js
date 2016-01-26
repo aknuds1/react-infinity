@@ -1,5 +1,4 @@
 'use strict';
-
 var React = require('react');
 var TransitionGroup = React.createFactory(require('react-addons-transition-group'));
 
@@ -41,6 +40,7 @@ function realRender(direction) {
     this.props.elementMobileWidth;
   var elementHeight = this.props.mobileWidth <= windowWidth ? this.props.elementHeight :
     this.props.elementMobileHeight;
+  var stackElements = !!this.props.stackElements;
   var margin = this.props.margin;
 
   var windowX, windowY, elementX, elementY;
@@ -56,29 +56,36 @@ function realRender(direction) {
     elementY = elementWidth;
   }
 
-  if(this.props.justifyOnMobile && this.props.mobileWidth > windowWidth) {
+  if (this.props.justifyOnMobile && this.props.mobileWidth > windowWidth) {
     elementX = windowX;
     margin = 0;
   }
 
-  var numElements = Math.max(1, Math.floor((windowX - margin) / (elementX + margin)));
+  var numElements = stackElements ? Math.max(
+      1, Math.floor((windowX - margin) / (elementX + margin))) : 1;
   var extraSpace = windowX - numElements * (elementX + margin) + margin;
   var offset = this.props.align === 'left' ? 0 :
-               this.props.align === 'center' ? Math.round(extraSpace/2) : extraSpace;
+               this.props.align === 'center' ? Math.round(extraSpace / 2) : extraSpace;
 
-  var scrollStart = this.state.scrollTop - this.state.scrollDelta;
+  var scrollStart = this.state.scrollTop - this.props.scrollDelta;
+  console.log(`Scroll delta: ${this.props.scrollDelta}, scroll top: ${this.state.scrollTop}`)
+  console.log(`Scroll start: ${scrollStart}`)
   var numBefore = Math.floor((scrollStart - margin) / (elementHeight + margin));
-  var numVisible = Math.ceil(((numBefore * (elementY + margin)) + windowY)/
+  console.log(`Number of elements before: ${numBefore}`)
+  var numVisible = Math.ceil(((numBefore * (elementY + margin)) + windowY) /
     (elementY + margin));
+  console.log(`Number of visible elements: ${numVisible}`)
 
-  var extra = numElements === 1 ? Math.ceil(numVisible/2) : 2;
+  var extra = numElements === 1 ? Math.ceil(numVisible / 2) : 2;
   var lowerLimit = (numBefore - extra) * numElements;
   var higherLimit = (numVisible + extra*2) * numElements;
 
   var elementsToRender = [];
 
   this.props.data.forEach(function (obj, index) {
-    if(index >= lowerLimit && index < higherLimit) {
+    console.log(`Rendering data item ${index}:`, obj)
+    console.log(`Lower limit: ${lowerLimit}, higherLimit: ${higherLimit}`)
+    if (index >= lowerLimit && index < higherLimit) {
       var column, row;
       if (direction === 'vertical') {
         column = index % numElements;
@@ -88,7 +95,7 @@ function realRender(direction) {
         column = Math.floor(index / numElements);
       }
       var id = obj.id != null ? obj.id : obj._id;
-      elementsToRender.push(SubContainer(
+      var subContainer = SubContainer(
         {
           key: id,
           transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+
@@ -98,7 +105,8 @@ function realRender(direction) {
           transition: this.props.transition,
         },
         this.props.childComponent(obj)
-      ));
+      );
+      elementsToRender.push(subContainer);
     }
   }.bind(this));
 
@@ -111,7 +119,8 @@ function realRender(direction) {
         position: 'relative',
       },
     },
-    TransitionGroup(null, elementsToRender)
+    elementsToRender
+    // TransitionGroup(null, elementsToRender)
   );
 }
 
@@ -135,6 +144,7 @@ var Infinite = React.createClass({
       scrollDelta: 0,
       direction: 'vertical',
       preRender: false,
+      stackElements: true,
     };
   },
 
@@ -153,6 +163,7 @@ var Infinite = React.createClass({
     margin: React.PropTypes.number,
     justifyOnMobile: React.PropTypes.bool,
     preRender: React.PropTypes.bool,
+    stackElements: React.PropTypes.bool,
   },
 
   getInitialState: function () {
@@ -161,7 +172,6 @@ var Infinite = React.createClass({
       windowWidth: this.props.windowWidth || 800,
       windowHeight: this.props.windowHeight || 600,
       loaded: false,
-      scrollDelta: 0,
       extra: {
         count: 0,
       },
@@ -212,7 +222,7 @@ var Infinite = React.createClass({
   },
 
   render: function(){
-    if(this.state.loaded === false) {
+    if (!this.state.loaded) {
       return this.props.preRender ? React.createElement(this.props.containerComponent,
         {
           className: this.props.className,
@@ -230,7 +240,7 @@ var Infinite = React.createClass({
     }
 
     var direction = this.props.direction;
-    if(direction !== 'horizontal' && direction !== 'vertical') {
+    if (direction !== 'horizontal' && direction !== 'vertical') {
       direction = 'vertical';
       console.warn('the prop `direction` must be either "vertical" or "horizontal". It is set to',
         direction);
