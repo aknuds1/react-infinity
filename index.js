@@ -87,9 +87,10 @@ function realRender(direction) {
         row = index % numElements;
         column = Math.floor(index / numElements);
       }
+      var id = obj.id != null ? obj.id : obj._id;
       elementsToRender.push(SubContainer(
         {
-          key: obj.id || obj._id,
+          key: id,
           transform: 'translate('+ (offset + column * (elementWidth + margin))  +'px, '+
             (margin + row * (elementHeight + margin)) +'px)',
           width: elementWidth + 'px',
