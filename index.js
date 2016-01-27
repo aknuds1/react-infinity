@@ -167,6 +167,7 @@ var Infinite = React.createClass({
     margin: React.PropTypes.number,
     justifyOnMobile: React.PropTypes.bool,
     preRender: React.PropTypes.bool,
+    scrollDelta: React.PropTypes.number,
     stackElements: React.PropTypes.bool,
   },
 
