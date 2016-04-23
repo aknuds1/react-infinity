@@ -31,10 +31,10 @@
   "homepage": "https://github.com/naman34/react-infinity",
   "dependencies": {
     "famous": "0.2.2",
-    "react-addons-transition-group": "^0.14.6"
+    "react-addons-transition-group": "^15.0.1"
   },
   "peerDependencies": {
-    "react": ">=0.14.6",
+    "react": "^15.0.1",
     "react-prefixr": "*"
   }
 }
